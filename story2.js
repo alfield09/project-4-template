@@ -7,7 +7,7 @@
 
 // ---- Data ------------------------------------------------------------------
 const RIDDLE = 'I wear midnight for a coat and two moons for eyes. I sit upon a secret and will not stir until I am asked.';
-const WRITTEN = 'Behind every black cat waits a ghost. Touch the rune and let it out.';
+const WRITTEN = 'Cold as breath and pale as frost, I am the cat that someone lost. Touch the rune and find my door. Who am I?';
 const S2_TITLE = 'The Book\'s Riddle';
 const S2_LENGTH = 8.6;                                   // seconds of payoff
 const CAT_HINT_DELAY = 15;                               // seconds before the cat sparkles to invite a tap
