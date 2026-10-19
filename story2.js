@@ -28,6 +28,7 @@ const CAT_EYES = [109, 127], CAT_EYE_Y = 261;            // matches drawCat in m
 // ---- State -----------------------------------------------------------------
 const s2 = {
   hop: -1,                       // seconds into the cat's small hop; -1 = sitting
+  bookSeen: false,               // the book has been opened at least once
   away: false, awayK: 0,         // cat has jumped down (target) and how far through the jump it is, 0..1
   openClock: 0, catSparkT: 0,
   dark: 0, bookGlow: 0, panelAlpha: 0, typed: -1,
@@ -66,8 +67,9 @@ const canAct = () => state.started && clock.running;
 function openRiddle() {
   game.mode = 'riddle';
   game.progress = 0; game.tintFade = true;               // leave Story 1 tidy
+  s2.bookSeen = true;                                    // from now on the cat will move out of the way when tapped
   s2.openClock = 0; s2.catSparkT = 0; s2.riddleHint = 0;
-  s2.away = false;                                      // reopening the book calls the cat back, so Story 2 can replay
+  s2.away = false;                                       // reopening the book calls the cat back, so Story 2 can replay
   riddleText.textContent = RIDDLE;
   riddleEl.hidden = false;
   s2.panelAlpha = 1;
@@ -91,17 +93,17 @@ function onBook() {
   else if (game.mode === 'riddle') closeRiddle();
 }
 
-// Tapping the cat is the riddle's answer: with the book open it jumps down, revealing the rune, and
-// Story 2 plays. With the book closed it only hops.
+// Tapping the cat is the riddle's answer. Once the book has been opened (even if it is closed again), the cat
+// jumps down, revealing the rune, and Story 2 plays. Before the book has been opened, it only hops.
 function onCat() {
   if (!canAct() || !canTalk() || s2.away) return;
   sfxMeow();
-  if (game.mode === 'riddle') {
+  if (s2.bookSeen) {                                       // the book has been opened once: the cat now moves out of the way
     s2.away = true;
     sfxThump();
     startStory2();
   } else {
-    s2.hop = 0;
+    s2.hop = 0;                                            // before that it only hops
   }
 }
 
@@ -116,6 +118,7 @@ function onRune() {
 function startStory2() {
   game.mode = 'story2';
   game.story = null;
+  game.progress = 0; game.tintFade = true;               // leave Story 1 tidy if the cat was tapped with the book closed
   s2.story = { t: 0, snuffed: false };
   riddleEl.hidden = true; s2.panelAlpha = 0;
   bookSpot.setAttribute('aria-expanded', 'false');
