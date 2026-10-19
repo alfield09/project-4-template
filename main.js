@@ -388,13 +388,16 @@ function drawTableClutter() {
 // back  = wall, rafters, window frame  (behind the sky)
 // front = window bars, furniture, props (in front of the sky)
 const makeLayer = () => Object.assign(document.createElement('canvas'), { width: W, height: H });
-const backLayer = makeLayer(), frontLayer = makeLayer();
+// cat  = the cat alone, so it can hop (story2.js moves it)
+const backLayer = makeLayer(), frontLayer = makeLayer(), catLayer = makeLayer();
 
 function renderStaticLayers() {
   ctx = backLayer.getContext('2d');
   drawWall(); drawRafters(); hangingHerbs(22, 50, 22); hangingHerbs(234, 44, 18); drawWindow();
   ctx = frontLayer.getContext('2d');
-  drawWindowFront(); drawShelves(); drawFloor(); drawTable(); drawCandles(); drawCauldron(); drawCat(); drawTableClutter();
+  drawWindowFront(); drawShelves(); drawFloor(); drawTable(); drawCandles(); drawCauldron(); drawTableClutter();
+  ctx = catLayer.getContext('2d');
+  drawCat();
   ctx = screen;
 }
 
@@ -403,11 +406,13 @@ const FLAMES = [{ x: 46, y: 281, phase: 0 }, { x: 60, y: 293, phase: 1.7 }];
 const BREW = { x: 186, y: 281 };            // surface of the cauldron brew
 const bubbles = [], steam = [];
 
+// candleFx (story2.js) scales the flames and leans them; size 0 = snuffed out
 function drawFlames(t) {
+  if (candleFx.size <= 0) return;
   FLAMES.forEach(f => {
     const fl = Math.sin(t * 14 + f.phase) * 0.5 + Math.sin(t * 23 + f.phase * 2) * 0.5;   // -1..1
-    const ry = 4 + Math.round(fl), dx = Math.round(Math.sin(t * 9 + f.phase) * 0.8);
-    glow(f.x, f.y + 6, 20, 24, '255,176,46', 0.10 + 0.04 * fl);
+    const ry = Math.max(1, Math.round((4 + fl) * candleFx.size)), dx = Math.round(Math.sin(t * 9 + f.phase) * 0.8 + candleFx.lean);
+    glow(f.x, f.y + 6, 20, 24, '255,176,46', (0.10 + 0.04 * fl) * Math.min(1, candleFx.size));
     ell(f.x + dx, f.y + 4 - ry, 2, ry, C.flame);
     ell(f.x + dx, f.y + 3, 1, 2, C.flameCore);
   });
@@ -416,6 +421,8 @@ function drawFlames(t) {
 // Cat blinks every ~4.6s
 function drawBlink(t) {
   if (t % 4.6 > 0.16) return;
+  const cat = catOffset();
+  if (cat.x || cat.y) return;                 // the cat is hopping or away from its seat
   [-9, 9].forEach(ex => {
     rect(118 + ex - 6, 262 - 7, 13, 12, C.catMid);
     rect(118 + ex - 5, 262 + 1, 11, 1, C.cat);
@@ -517,6 +524,8 @@ function update(dt) {
   timers.owl -= dt;
   if (timers.owl <= 0) { timers.owl = rand(14, 26); sfxOwl(); }
   storyUpdate(dt);        // story.js: puzzle, hints, story timeline
+  story2Update(dt);       // story2.js: spellbook riddle, cat hint, story timeline
+  story3Update(dt);       // story3.js: rune door, ghost cat, moon, witch
 }
 
 function render() {
@@ -527,7 +536,10 @@ function render() {
   if (shake) screen.translate(Math.round((Math.random() - 0.5) * 2 * shake), Math.round((Math.random() - 0.5) * 2 * shake));
   screen.drawImage(backLayer, 0, 0);
   drawSky(tv);
+  story3DrawSky(tv);      // the witch flies outside the window, behind its bars
   screen.drawImage(frontLayer, 0, 0);
+  const cat = catOffset();
+  screen.drawImage(catLayer, cat.x, cat.y);
   storyDrawBottles(tv);
   storyDrawBrew();
   drawFlames(tv);
@@ -535,6 +547,8 @@ function render() {
   drawBubbles();
   drawSteam();
   storyDrawFx(tv);
+  story2DrawFx(tv);
+  story3DrawFx(tv);
   screen.restore();
   storyDrawFlash();
 }
@@ -582,4 +596,5 @@ enterBtn.addEventListener('click', () => {
   initAudio();            // must happen inside this user gesture
   setRunning(true);
   playPause.focus();
+  showMessage('Help solve puzzles to find the cat\'s witch', 6);   // story.js; the first thing the player reads
 });

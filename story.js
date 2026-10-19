@@ -27,13 +27,19 @@ const RAINBOW = ['#ff4a4a', '#ff9a2e', '#ffd93d', '#5dff7a', '#4be0ff', '#b04bff
 const STORY_LENGTH = 8.4;                                // seconds, after the last droplet lands
 const DROP_TIME = 0.55;                                  // seconds a droplet flies to the cauldron
 
-// Progressive hints: they hint at colors without naming the order or the objects to tap.
+// Progressive hints, shared by every story: they hint without naming the order or the objects to tap.
+// `for` is the story a hint helps with (hints for a story already found are skipped);
+// `glint` makes that story's objects sparkle once the hint has been shown.
 const HINTS = [
-  'The black cat keeps staring at the shelves…',
-  'A few potions glint as if they want to be chosen. Does the order matter?',
-  'Dusk, then new leaves, then a sunrise. The cauldron is thirsty for a sky.',
+  { for: 'any', text: 'The black cat keeps staring at the shelves…' },
+  { for: 'potions', glint: 'potions', text: 'A few potions glint as if they want to be chosen. Does the order matter?' },
+  { for: 'book', glint: 'book', text: 'On the lower shelf, one book hums softly. Some books want to be opened.' },
+  { for: 'potions', text: 'Dusk, then new leaves, then a sunrise. The cauldron is thirsty for a sky.' },
+  { for: 'book', text: 'A golden eye blinks on a green spine. It has a story to tell.' },
 ];
-const HINT_DELAYS = [12, 20, 20];                        // seconds of idleness before each hint
+const hintDelay = level => (level === 0 ? 12 : 20);      // seconds of idleness before each hint
+const hintDone = h => (h.for === 'potions' && game.found[0]) || (h.for === 'book' && game.found[1]);
+const glinting = kind => HINTS.slice(0, game.hintLevel).some(h => h.glint === kind);
 
 // ---- State -----------------------------------------------------------------
 const game = {
@@ -143,7 +149,7 @@ function wrongTap(b) {
 function startStory() {
   game.mode = 'story';
   game.story = { t: -DROP_TIME, boom: false, poof: false, steamT: 0, fountainT: 0, trailT: 0 };   // t<0: last droplet still falling
-  hintEl.classList.remove('show');
+  showMessage('The Rainbow Brew', 5);                    // the story's title; stories have no fixed order
   scheduleStorySound(DROP_TIME);
 }
 
@@ -153,7 +159,6 @@ function endStory() {
   game.tintFade = true;
   game.hintClock = 0;
   game.found[0] = true;
-  showMessage('Story 1 of 3 found: The Rainbow Brew', 4);
 }
 
 // ---- Update (called from main.js update, only while running) ----------------------
@@ -184,9 +189,10 @@ function storyUpdate(dt) {
   if (game.msgTimer > 0) { game.msgTimer -= dt; if (game.msgTimer <= 0) hintEl.classList.remove('show'); }
 
   if (game.mode === 'idle') {                            // progressive hints while the User is stuck
-    game.hintClock += dt;
-    if (game.hintLevel < HINTS.length && game.hintClock >= HINT_DELAYS[game.hintLevel]) {
-      showMessage(HINTS[game.hintLevel], 7);
+    if (!(s3.door && !game.found[2])) game.hintClock += dt;   // the open door has its own hints; don't talk over them
+    while (game.hintLevel < HINTS.length && hintDone(HINTS[game.hintLevel])) game.hintLevel++;   // skip hints for found stories
+    if (game.hintLevel < HINTS.length && game.hintClock >= hintDelay(game.hintLevel)) {
+      showMessage(HINTS[game.hintLevel].text, 7);
       game.hintLevel++; game.hintClock = 0;
     }
   } else if (game.story) {
@@ -259,8 +265,8 @@ function storyDrawBottles(tv) {
     if (inSequence && game.floatAmt > 0) dy -= Math.round(game.floatAmt * (14 + Math.sin(clock.t * 4 + i) * 2));
     if (b.kind === 'flask') flask(b.x + dx, b.y + dy, b.r, b.c, b.d); else vial(b.x + dx, b.y + dy, b.h, b.c, b.d);
 
-    // After the second hint the three right potions glint now and then
-    if (inSequence && game.hintLevel >= 2 && game.mode === 'idle') {
+    // Once the potion hint has been shown, the three right potions glint now and then
+    if (inSequence && glinting('potions') && game.mode === 'idle') {
       const phase = (tv + i * 1.1) % 3;
       if (state.reduceMotion || phase < 0.5) {
         const sx = b.x + (b.kind === 'flask' ? b.r - 1 : 3) + dx, sy = bottleTop(b) + 6 + dy;
@@ -314,7 +320,10 @@ function storyDrawFx(tv) {
 
   // Scared cat: wide eyes with round pupils while the cauldron rumbles
   if (game.eyesWide) {
+    const cat = catOffset();                  // follows the cat if it is away from its seat
+    ctx.save(); ctx.translate(cat.x, cat.y);
     [-9, 9].forEach(ex => { ell(118 + ex, 261, 7, 8, C.eye); ell(118 + ex, 262, 3, 5, C.cat); rect(118 + ex + 2, 258, 2, 2, '#ffffff'); });
+    ctx.restore();
   }
 
   // Ghost-cat

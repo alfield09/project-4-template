@@ -30,7 +30,9 @@ Main risk: audio and timing can't be judged without a human listening on a real 
 - [ ] 4. **Developer playtest of Story 1** in the browser preview (desktop first: sound, pacing, hints, Play/Pause mid-story).
 - [ ] 5. Deploy to a public HTTPS URL and verify on a physical phone (Phase 1 deliverable).
 - [ ] 6. Peer playtest, then fix the top findings.
-- [ ] 7. Stories 2 and 3, discovered-story counter, credits.
+- [x] 7a. Story 2 built, then revised on the Developer's direction (shelf book, riddle about the cat, hidden rune, titles without numbers). 17 scripted checks pass and screenshots were checked; the Developer has not played the revision yet.
+- [x] 7b. Story 3 built (rune door, ghost cat, three stars, cloud, moon, witch). 23 scripted checks pass, including the Rainbow Brew gate; screenshots were checked; the Developer has not played it yet.
+- [ ] 7c. Discovered-story counter, credits.
 - [ ] 8. Final verification against `brief.md` and `spec.md`; debrief.
 
 ## Evidence and revisions

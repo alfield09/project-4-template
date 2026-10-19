@@ -115,6 +115,7 @@ button:active { transform: translateY(2px); }
   border-radius: 8px;
 }
 .hotspot:active { transform: none; }
+.hotspot:disabled { pointer-events: none; }   /* a disabled hotspot must not swallow taps meant for the one under it */
 
 /* Hints and story messages */
 #hint {
@@ -137,5 +138,46 @@ button:active { transform: translateY(2px); }
 }
 #hint.show { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { #hint { transition: none; } }
+
+/* Spellbook riddle: sized in stage units (256x448) so it lines up with the page drawn on the canvas */
+#stage { container-type: inline-size; }
+#riddle {
+  position: absolute;
+  left: calc(22 / 256 * 100%);
+  top: calc(20 / 448 * 100%);
+  width: calc(212 / 256 * 100%);
+  height: calc(146 / 448 * 100%);
+  pointer-events: none;
+}
+#riddle[hidden] { display: none; }
+#riddleText {
+  position: absolute;
+  left: calc(9 / 212 * 100%);
+  top: calc(12 / 146 * 100%);
+  width: calc(88 / 212 * 100%);
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-size: 1rem;
+  font-size: 4.3cqw;
+  line-height: 1.3;
+  color: #2a1647;
+}
+#riddleClose {
+  position: absolute;
+  right: 0;
+  top: 0;
+  min-width: 0;
+  min-height: 0;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: 1.6rem;
+  line-height: 1;
+  border-radius: 50%;
+  pointer-events: auto;
+}
 
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
