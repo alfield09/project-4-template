@@ -129,7 +129,7 @@ function endStory2() {
   s2.story = null; s2.dark = 0; s2.bookGlow = 0; s2.panelAlpha = 0; s2.typed = -1;
   candleFx.size = 1; candleFx.lean = 0;
   riddleEl.hidden = true;
-  game.found[1] = true;
+  markFound(1);
 }
 
 // ---- Update (called from main.js update, only while running) ----------------------

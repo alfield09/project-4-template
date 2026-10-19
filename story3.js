@@ -55,9 +55,53 @@ function scheduleStory3Sound(d) {
   tone(780, 1040, 0.4, 0.05, 'sine', d + 0.12);
   noiseBurst(2.6, 0.12, 900, d + 0.4, 'bandpass');                    // rising wind
   noiseBurst(1.3, 0.16, 2200, d + 2.3, 'bandpass');                   // broom whoosh as she passes
-  for (let i = 0; i < 6; i++) tone(580 - i * 20, 390 - i * 14, 0.14, 0.07, 'sawtooth', d + 2.0 + i * 0.19, 1500);   // cackle
+  witchCackle(d);                                                    // the witch cackles as she flies (see below)
   [1200, 1000, 1400, 1700].forEach((f, i) => tone(f, f, 0.3, 0.05, 'sine', d + 4.9 + i * 0.14));   // she is gone: twinkle
   tone(700, 500, 0.35, 0.05, 'triangle', d + 5.8, 1800);              // a soft ghost-cat meow
+}
+
+// ---- The witch's cackle: a run of "hee/ha" syllables while she flies, heard and shown ----------
+// Each syllable is a buzzy voice (sawtooth with vibrato) shaped by two vowel-like filters.
+const LAUGH = Array.from({ length: 14 }, (_, i) => ({ t: 1.2 + i * 0.24, big: i === 3, word: i % 2 ? 'HE' : 'HA' }));   // t = seconds after the story starts
+
+function laughSyllable(t0, f, vol, dur) {
+  if (!ac) return;
+  const o = ac.createOscillator(), v = ac.createOscillator(), vg = ac.createGain(), g = ac.createGain();
+  const f1 = ac.createBiquadFilter(), f2 = ac.createBiquadFilter();
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(f * 1.12, t0); o.frequency.exponentialRampToValueAtTime(f * 0.82, t0 + dur);   // each "ha" drops in pitch
+  v.frequency.value = 8; vg.gain.value = f * 0.03; v.connect(vg); vg.connect(o.frequency);                  // a shaky witch voice
+  f1.type = 'bandpass'; f1.frequency.value = 850; f1.Q.value = 3;                                            // vowel "a"
+  f2.type = 'bandpass'; f2.frequency.value = 1500; f2.Q.value = 4;
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(f1); o.connect(f2); f1.connect(g); f2.connect(g); g.connect(audio.master);
+  o.start(t0); v.start(t0); o.stop(t0 + dur + 0.05); v.stop(t0 + dur + 0.05);
+}
+
+function witchCackle(d) {                                // d = delay until the story starts
+  LAUGH.forEach((s, i) => laughSyllable(ac ? ac.currentTime + d + s.t : 0, 640 - i * 14 + (s.big ? 80 : 0), s.big ? 0.3 : 0.2, s.big ? 0.26 : 0.17));
+}
+
+// Tiny 3x5 pixel letters for the "HA" bubbles
+const LETTERS = {
+  H: ['#.#', '#.#', '###', '#.#', '#.#'],
+  A: ['.#.', '#.#', '###', '#.#', '#.#'],
+  E: ['###', '#..', '##.', '#..', '###'],
+  '!': ['#', '#', '#', '.', '#'],
+};
+function drawWord(word, x, y, s, color) {
+  let cx = x;
+  [...word].forEach(ch => { drawGlyph(LETTERS[ch], cx, y, color, s); cx += (LETTERS[ch][0].length + 1) * s; });
+}
+
+// "HA!" pops above the witch's head in time with each syllable of the laugh
+function drawLaugh() {
+  if (!s3.witch || !s3.story) return;
+  const now = s3.story.t, s = LAUGH.find(l => now >= l.t && now < l.t + (l.big ? 0.26 : 0.17));
+  if (!s) return;
+  const sc = s.big ? 3 : 2, x = Math.max(92, Math.min(150, s3.witch.x - 4)), y = Math.max(40, s3.witch.y - 44) - (s.big ? 3 : 0);
+  drawWord(s.word + '!', x + 1, y + 1, sc, '#0a0820');   // shadow
+  drawWord(s.word + '!', x, y, sc, s.big ? '#ffd93d' : '#d9ffd0');
 }
 
 // ---- Interaction -------------------------------------------------------------
@@ -100,7 +144,7 @@ function endStory3() {
   game.hintClock = 0;
   s3.story = null; s3.witch = null; s3.moonGlow = 0; s3.idle = 0; s3.hint = STAR_HINTS.length; s3.moonHint = true;   // hints are done once found
   s3.lit = [false, false, false]; s3.order = [];          // the stars go dark and the cloud returns, ready to replay
-  game.found[2] = true;
+  markFound(2);
 }
 
 // ---- Update (called from main.js update, only while running) ----------------------
@@ -287,6 +331,7 @@ function story3DrawFx(tv) {
   if (a <= 0) return;
   drawDoor(tv, a);
   drawDoorGhost(tv, a);
+  drawLaugh();                                            // "HA!" bubbles above the flying witch
 
   // Three progress pips above the door, one per lit star
   if (s3.order.length > 0 || game.mode === 'story3') {

@@ -583,6 +583,7 @@ const enterBtn = document.getElementById('enter');
 const reduceBox = document.getElementById('reduceMotion');
 
 // Honor the device preference before the experience begins; User may override.
+try { const kept = sessionStorage.getItem('hw-reduce'); if (kept !== null) state.reduceMotion = kept === '1'; } catch (e) { /* no storage: keep the device setting */ }
 reduceBox.checked = state.reduceMotion;
 
 // Wait for every script (story.js loads after this file) before the first draw.

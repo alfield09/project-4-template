@@ -31,6 +31,8 @@ Reference the brief's fixed requirements rather than copying them. Specify your 
 - **Start screen:** the Enter button starts the scene and audio. A "Reduce motion" checkbox is pre-set from the device preference. Reduced motion freezes ambient visuals; sound still plays.
 - **Ambient effects:** candle flicker, cauldron bubbles and steam, twinkling stars, drifting clouds, bats crossing the window, and cat blinks. Ambient sound is synthesized: looping wind and room tone, bubble pops, an occasional owl hoot (see `research.md`).
 - **Play/Pause:** one 44px button, bottom right. It stops motion, audio, sound-event timers, hint timers and interaction together through a single clock. The tab auto-pauses when hidden.
+- **Progress bar** ([story.js](story.js), [index.html](index.html)): three segments across the top, lit as stories are found, in any order, with a "n/3" count and an accessible progressbar role. Replaying a story does not change it.
+- **Final screen** ([story.js](story.js), [index.html](index.html)): 2 s after the last story ends (Story 3 always comes last, since it needs the other two), a dialog says "You found the witch!" with a Restart button, a small fanfare and a last laugh from the witch. It locks the scene and hides Play/Pause. Restart reloads the page, which clears all story state and returns to the start screen (Enter is needed again to restore audio); the Reduce motion choice is kept for the tab.
 - **Story 1, "The Rainbow Brew"** ([story.js](story.js)):
   - Trigger: tap the purple, green, then orange potion. Each correct tap gives a hop, a droplet into the cauldron, a brew color change, a chime, and a progress pip.
   - Wrong tap (any other bottle, or the wrong order): shake, puff, buzz, red pips, progress resets.
@@ -51,7 +53,7 @@ Reference the brief's fixed requirements rather than copying them. Specify your 
   - Trigger: after Story 2, tap the glowing rune to open a ghostly door (a ghost cat sits inside). A cloud covers the moon and three stars blink in the window. Tap each star (any order) to light it: a rising note, a constellation line and a pip above the door. When all three are lit the cloud drifts away; tap the revealed moon to play the story. Stars and moon are disabled until they can be tapped.
 - Gate: the stars, the cloud and the moon stay hidden and locked until the Rainbow Brew has been found. Before that, the door's ghost cat points at the cauldron (trail at 10 s, text at 14 s, 30 s and 46 s). When the Rainbow Brew ends the stars appear with a sparkle and a message; if it was already found they show as soon as the door opens.
   - Hints: a spark trail from the door to an unlit star at 10 s, text at 14 s and 30 s; once the moon is revealed, the trail points at it, it glints, and a text hint follows after 8 s. The general hint stream pauses while the door is waiting.
-  - Story: about 8 s. The moon brightens, a witch on a broom with a small cat flies across it behind the window bars with green sparkles and a cackle, then is gone with a twinkle. The title "The Witch's Flight" shows at the start. Everything is locked during it.
+  - Story: about 8 s. The moon brightens, a witch on a broom with a small cat flies across it behind the window bars with green sparkles, then is gone with a twinkle. She laughs the whole way: a 14-syllable synthesized cackle (hee/ha, dropping in pitch, one louder "HAA") with "HA!" and "HE!" pixel bubbles popping up in time with it. The title "The Witch's Flight" shows at the start. Everything is locked during it.
   - The door stays so it can replay: the stars go dark and the cloud returns. Reopening the book calls the cat back, closes the door and resets the stars.
 
 ### Acceptance checks for the current checkpoint
@@ -65,6 +67,7 @@ Verified by scripted headless-Chrome tests only; **not yet verified by the Devel
 - [ ] Story 2 by the Developer: riddle readable on a phone, the riddle-to-cat link is discoverable, payoff pacing, audio balance.
 - [x] Story 3 (scripted tests, 23 checks; includes the Rainbow Brew gate: stars hidden and locked until it is found, cauldron nudges, reveal on completion, immediate if already found): stars and moon locked until the door opens; the door fades in; stars light in any order with pips and lines and ignore a second tap; Story 1 still works meanwhile; the moon stays hidden until all three are lit, then is revealed and tappable; hints appear at the set times; the moon starts the story with its title and locks everything; it ends idle with the stars reset, the door kept and the cloud returned; it replays; reopening the book closes the door.
 - [ ] Story 3 by the Developer: the witch reads against the moon, the ghost cat points clearly enough, pacing, audio balance.
+- [x] Final screen (scripted tests, 8 checks): hidden until the last story ends; appears about 2 s later with focus on Restart; Play/Pause hidden; stays open; Restart returns to the start screen with nothing found and Reduce motion kept; the game can be started again.- [ ] Final screen by the Developer: wording, fanfare and laugh, and that Restart is easy to find on a phone.
 - [ ] Audio levels and quality (needs a human listener).
 - [ ] Play/Pause mid-story, and a story replay after pausing.
 - [ ] Touch and keyboard on a physical phone; tap targets of about 44px.
@@ -75,7 +78,7 @@ Verified by scripted headless-Chrome tests only; **not yet verified by the Devel
 
 **Next behavior that must work:** playtest all three stories on a phone, then deploy. The progress requirement is now met by all three stories (pips or lines), but each is untested by a human.
 
-**Not built yet:** the discovered-story counter, credits and sources screen, and deployment.
+**Not built yet:** credits and sources screen (it could sit on the final screen), and deployment.
 
 **Requirement changes:** none to `brief.md`. Decisions with reasons are in `research.md`.
 

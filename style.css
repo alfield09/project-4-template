@@ -34,7 +34,7 @@ html, body {
   touch-action: manipulation;
 }
 
-#start {
+#start, #finale {
   position: absolute;
   inset: 0;
   display: flex;
@@ -46,9 +46,9 @@ html, body {
   text-align: center;
   background: rgba(14, 7, 32, 0.92);
 }
-#start[hidden] { display: none; }
+#start[hidden], #finale[hidden] { display: none; }
 
-h1 {
+h1, #finaleTitle {
   margin: 0;
   font-size: clamp(2rem, 11vw, 3.2rem);
   color: var(--accent);
@@ -56,6 +56,7 @@ h1 {
   text-shadow: 0 3px 0 #5a1d7a;
 }
 h1 span { color: var(--paper); }
+#finaleTitle { text-align: center; }
 
 .tagline { margin: 0; font-size: 1.1rem; max-width: 18em; }
 
@@ -181,3 +182,26 @@ button:active { transform: translateY(2px); }
 }
 
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+/* Progress bar over the rafters: one segment per story found (3 in all) */
+#progress {
+  position: absolute;
+  left: calc(74 / 256 * 100%);
+  top: calc(2 / 448 * 100%);
+  width: calc(108 / 256 * 100%);
+  height: calc(10 / 448 * 100%);
+  display: flex;
+  align-items: center;
+  gap: calc(4 / 256 * 100%);
+  pointer-events: none;
+}
+#progress .seg {
+  flex: 1;
+  height: 100%;
+  background: #1d0e35;
+  border: 1px solid rgba(255, 243, 214, 0.55);
+  transition: background 0.4s, box-shadow 0.4s;
+}
+#progress .seg.on { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+#progressCount { font-size: 0.7rem; font-size: 3.4cqw; line-height: 1; font-weight: bold; color: var(--paper); text-shadow: 0 1px 0 #000; }
+@media (prefers-reduced-motion: reduce) { #progress .seg { transition: none; } }

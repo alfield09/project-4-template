@@ -47,7 +47,7 @@ const game = {
   progress: 0,                   // correct taps so far
   pipError: 0,                   // seconds the pips flash red after a wrong tap
   tint: null, tintAlpha: 0, tintFade: false,   // color the brew has been changed to
-  hintClock: 0, hintLevel: 0, msgTimer: 0,
+  hintClock: 0, hintLevel: 0, msgTimer: 0, finaleIn: 0,
   story: null, floatAmt: 0, eyesWide: false, shake: 0, flash: 0,
   found: [false, false, false],
 };
@@ -158,11 +158,57 @@ function endStory() {
   game.story = null; game.progress = 0; game.floatAmt = 0; game.eyesWide = false; game.shake = 0; ghostPos = null;
   game.tintFade = true;
   game.hintClock = 0;
-  game.found[0] = true;
+  markFound(0);
 }
 
 // ---- Update (called from main.js update, only while running) ----------------------
+// ---- Progress bar: one segment per story found, in whatever order they are found ----------------
+const progressEl = document.getElementById('progress');
+const progressSegs = [...progressEl.querySelectorAll('.seg')];
+const progressCount = document.getElementById('progressCount');
+let shownFound = -1;
+
+// ---- Final screen: shown a moment after the last story ends, with a button to start over -----------
+const finaleEl = document.getElementById('finale');
+const FINALE_DELAY = 2;                                  // seconds after the last story, so its ending can land
+
+function markFound(i) {
+  const was = game.found.every(Boolean);
+  game.found[i] = true;
+  if (!was && game.found.every(Boolean)) game.finaleIn = FINALE_DELAY;
+}
+
+function showFinale() {
+  game.mode = 'finale';                                  // locks every story and hotspot
+  hintEl.classList.remove('show');
+  playPause.hidden = true;
+  finaleEl.hidden = false;
+  document.getElementById('restart').focus();
+  [523, 659, 784, 1047].forEach((f, i) => tone(f, f, 0.5, 0.08, 'triangle', i * 0.18));   // a small fanfare
+  witchCackle(0.9);                                      // the witch has the last laugh
+}
+
+// Restarting reloads the page: it clears every story's state and returns to the start screen, where Enter
+// restores audio. The Reduce motion choice is kept for this tab.
+document.getElementById('restart').addEventListener('click', () => {
+  try { sessionStorage.setItem('hw-reduce', state.reduceMotion ? '1' : '0'); } catch (e) { /* private mode: fall back to the device setting */ }
+  location.reload();
+});
+
+
+function updateProgressBar() {
+  const n = game.found.filter(Boolean).length;
+  if (n === shownFound) return;
+  shownFound = n;
+  progressSegs.forEach((seg, i) => seg.classList.toggle('on', i < n));
+  progressCount.textContent = n + '/3';
+  progressEl.setAttribute('aria-valuenow', n);
+  progressEl.setAttribute('aria-valuetext', n + ' of 3 stories found');
+}
+
 function storyUpdate(dt) {
+  updateProgressBar();
+  if (game.finaleIn > 0 && game.mode === 'idle') { game.finaleIn -= dt; if (game.finaleIn <= 0) showFinale(); }
   BOTTLES.forEach(b => {
     if (b.shake > 0) b.shake = Math.max(0, b.shake - dt);
     if (b.hop >= 0) { b.hop += dt; if (b.hop > 0.45) b.hop = -1; }

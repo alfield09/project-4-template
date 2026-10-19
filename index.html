@@ -14,6 +14,12 @@
     <!-- Progressive text hints and story messages (written by story.js) -->
     <p id="hint" role="status" aria-live="polite"></p>
 
+    <!-- Progress bar (story.js): one segment per story found; the stories can be found in any order -->
+    <div id="progress" role="progressbar" aria-label="Stories found" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0" aria-valuetext="0 of 3 stories found">
+      <span class="seg"></span><span class="seg"></span><span class="seg"></span>
+      <span id="progressCount" aria-hidden="true">0/3</span>
+    </div>
+
     <!-- Single Play/Pause control: pauses motion, sound, effects, timers and interaction together -->
     <button id="playpause" type="button" aria-label="Pause" aria-pressed="false" hidden></button>
 
@@ -32,6 +38,13 @@
         Reduce motion
       </label>
       <button id="enter" type="button">Enter</button>
+    </section>
+
+    <!-- Final screen (story.js): shown after all three stories are found -->
+    <section id="finale" role="dialog" aria-modal="true" aria-labelledby="finaleTitle" hidden>
+      <h2 id="finaleTitle">You found the witch!</h2>
+      <p class="tagline">The cat's witch is home at last. All three stories are found.</p>
+      <button id="restart" type="button">Restart</button>
     </section>
   </main>
   <script src="main.js"></script>

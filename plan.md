@@ -32,7 +32,9 @@ Main risk: audio and timing can't be judged without a human listening on a real 
 - [ ] 6. Peer playtest, then fix the top findings.
 - [x] 7a. Story 2 built, then revised on the Developer's direction (shelf book, riddle about the cat, hidden rune, titles without numbers). 17 scripted checks pass and screenshots were checked; the Developer has not played the revision yet.
 - [x] 7b. Story 3 built (rune door, ghost cat, three stars, cloud, moon, witch). 23 scripted checks pass, including the Rainbow Brew gate; screenshots were checked; the Developer has not played it yet.
-- [ ] 7c. Discovered-story counter, credits.
+- [x] 7c. Progress bar (three segments, found in any order). 5 scripted checks pass and a screenshot was checked; not yet seen by the Developer.
+- [x] 7d. Final "You found the witch!" screen with Restart. 8 scripted checks pass and a screenshot was checked; not yet seen by the Developer.
+- [ ] 7e. Credits and sources screen.
 - [ ] 8. Final verification against `brief.md` and `spec.md`; debrief.
 
 ## Evidence and revisions
