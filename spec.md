@@ -36,7 +36,7 @@ Reference the brief's fixed requirements rather than copying them. Specify your 
 - **Story 1, "The Rainbow Brew"** ([story.js](story.js)):
   - Trigger: tap the purple, green, then orange potion. Each correct tap gives a hop, a droplet into the cauldron, a brew color change, a chime, and a progress pip.
   - Wrong tap (any other bottle, or the wrong order): shake, puff, buzz, red pips, progress resets.
-  - Story: about 8.4 s of levitating potions, rainbow brew, rumble, eruption, a ghost-cat past the moon, poof. The title "The Rainbow Brew" shows when it starts. It is replayable.
+  - Story: about 8.4 s of levitating potions, rainbow brew, rumble, eruption, a ghost-cat past the moon, poof. The title "The Rainbow Brew" shows when it starts. It plays once: afterwards the potions stay on the shelf but no longer respond or glint.
   - All other interaction is locked during the story, while paused, and before Enter.
   - Hints: shared with Story 2 and interleaved (cat staring, potions glint, book hums, potion colors, golden eye on the book): the first after 12 s idle, then every 20 s. Hints for a story already found are skipped. Once the potion hint has shown, the right bottles glint.
   - Bottles are invisible buttons, so keyboard and touch both work.
@@ -45,7 +45,7 @@ Reference the brief's fixed requirements rather than copying them. Specify your 
   - Trigger: tap the glowing green book on the lower-left shelf to open it (tap it again, the close button, or Escape to close). The riddle describes the cat. While it is open, Story 1's potions are locked.
   - Solution: tap the cat. Until the book has been opened once, the cat only hops. After that (even with the book closed again), tapping it makes it meow and jump down onto the rug, Story 2 starts (title "The Book's Riddle"), and the cat stays away. A glowing rune stays on the wall where it sat, tappable once Story 2 ends; tapping it leads to the last story (Story 3, not built: it shows a placeholder message). Reopening the book calls the cat back, so Story 2 can replay.
   - Hints: the idle hints above point at the book (it glows brighter and glints once its hint has shown). With the riddle open: a text hint at 20 s ("someone in this very room") and 40 s ("who here sits and watches you?"), and the cat sparkles from 15 s.
-  - Payoff: about 8.6 s of leaning flames, a snuffed-out dark room, a self-writing page, and relit candles. Everything is locked during it, and it is replayable.
+  - Payoff: about 8.6 s of leaning flames, a snuffed-out dark room, a self-writing page, and relit candles. Everything is locked during it. It plays once: afterwards the book stops opening and the cat stays out of the way.
   - Reduce motion: no ember stream and no cat sparkles. The darkness, text and cat jump still play.
   - Structure: the cat is its own baked layer in [main.js](main.js) so it can move; the flames read `candleFx` so the story can lean and snuff them.
   - Story titles show when a story starts, with no numbering, since stories have no fixed order.
@@ -54,7 +54,7 @@ Reference the brief's fixed requirements rather than copying them. Specify your 
 - Gate: the stars, the cloud and the moon stay hidden and locked until the Rainbow Brew has been found. Before that, the door's ghost cat points at the cauldron (trail at 10 s, text at 14 s, 30 s and 46 s). When the Rainbow Brew ends the stars appear with a sparkle and a message; if it was already found they show as soon as the door opens.
   - Hints: a spark trail from the door to an unlit star at 10 s, text at 14 s and 30 s; once the moon is revealed, the trail points at it, it glints, and a text hint follows after 8 s. The general hint stream pauses while the door is waiting.
   - Story: about 8 s. The moon brightens, a witch on a broom with a small cat flies across it behind the window bars with green sparkles, then is gone with a twinkle. She laughs the whole way: a 14-syllable synthesized cackle (hee/ha, dropping in pitch, one louder "HAA") with "HA!" and "HE!" pixel bubbles popping up in time with it. The title "The Witch's Flight" shows at the start. Everything is locked during it.
-  - The door stays so it can replay: the stars go dark and the cloud returns. Reopening the book calls the cat back, closes the door and resets the stars.
+  - The door stays open after the story, but the stars and the cloud are gone for good and the moon and stars no longer respond. The cat is never called back, since the book no longer opens.
 
 ### Acceptance checks for the current checkpoint
 
@@ -67,9 +67,10 @@ Verified by scripted headless-Chrome tests only; **not yet verified by the Devel
 - [ ] Story 2 by the Developer: riddle readable on a phone, the riddle-to-cat link is discoverable, payoff pacing, audio balance.
 - [x] Story 3 (scripted tests, 23 checks; includes the Rainbow Brew gate: stars hidden and locked until it is found, cauldron nudges, reveal on completion, immediate if already found): stars and moon locked until the door opens; the door fades in; stars light in any order with pips and lines and ignore a second tap; Story 1 still works meanwhile; the moon stays hidden until all three are lit, then is revealed and tappable; hints appear at the set times; the moon starts the story with its title and locks everything; it ends idle with the stars reset, the door kept and the cloud returned; it replays; reopening the book closes the door.
 - [ ] Story 3 by the Developer: the witch reads against the moon, the ghost cat points clearly enough, pacing, audio balance.
+- [x] One-time rule (scripted tests): finished potions, the book and cat, and the stars and moon do not respond; the cloud does not return; the door stays; hotspots are disabled so keyboard focus skips them. **Conflicts with the brief's replay requirement; see research.md.**
 - [x] Final screen (scripted tests, 8 checks): hidden until the last story ends; appears about 2 s later with focus on Restart; Play/Pause hidden; stays open; Restart returns to the start screen with nothing found and Reduce motion kept; the game can be started again.- [ ] Final screen by the Developer: wording, fanfare and laugh, and that Restart is easy to find on a phone.
 - [ ] Audio levels and quality (needs a human listener).
-- [ ] Play/Pause mid-story, and a story replay after pausing.
+- [ ] Play/Pause mid-story.
 - [ ] Touch and keyboard on a physical phone; tap targets of about 44px.
 - [ ] Contrast and readability of the hint text over the scene.
 - [ ] Deployed to a public HTTPS URL and verified on a physical phone.

@@ -125,7 +125,7 @@ function scheduleStorySound(d) {                         // d = delay until the 
 // ---- Interaction -------------------------------------------------------------
 function onBottle(b) {
   // Everything is locked while paused or while a story plays
-  if (!state.started || !clock.running || game.mode !== 'idle') return;
+  if (!state.started || !clock.running || game.mode !== 'idle' || game.found[0]) return;   // a finished story does nothing
   game.hintClock = 0;
   if (b.id === SEQUENCE[game.progress]) correctTap(b); else wrongTap(b);
 }
@@ -175,6 +175,7 @@ const FINALE_DELAY = 2;                                  // seconds after the la
 function markFound(i) {
   const was = game.found.every(Boolean);
   game.found[i] = true;
+  if (i === 0) BOTTLES.forEach(b => { if (b.spot) b.spot.disabled = true; });   // the bottles stay put but no longer respond
   if (!was && game.found.every(Boolean)) game.finaleIn = FINALE_DELAY;
 }
 
@@ -312,7 +313,7 @@ function storyDrawBottles(tv) {
     if (b.kind === 'flask') flask(b.x + dx, b.y + dy, b.r, b.c, b.d); else vial(b.x + dx, b.y + dy, b.h, b.c, b.d);
 
     // Once the potion hint has been shown, the three right potions glint now and then
-    if (inSequence && glinting('potions') && game.mode === 'idle') {
+    if (inSequence && glinting('potions') && game.mode === 'idle' && !game.found[0]) {
       const phase = (tv + i * 1.1) % 3;
       if (state.reduceMotion || phase < 0.5) {
         const sx = b.x + (b.kind === 'flask' ? b.r - 1 : 3) + dx, sy = bottleTop(b) + 6 + dy;
@@ -408,5 +409,6 @@ BOTTLES.filter(b => b.tap).forEach(b => {
   el.style.top = ((bottom - height) / H * 100) + '%';
   el.style.height = (height / H * 100) + '%';
   el.addEventListener('click', () => onBottle(b));
+  b.spot = el;                                                // so markFound can switch it off
   stageEl.insertBefore(el, document.getElementById('hint'));   // stays under the start screen
 });

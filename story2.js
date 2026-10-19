@@ -69,7 +69,6 @@ function openRiddle() {
   game.progress = 0; game.tintFade = true;               // leave Story 1 tidy
   s2.bookSeen = true;                                    // from now on the cat will move out of the way when tapped
   s2.openClock = 0; s2.catSparkT = 0; s2.riddleHint = 0;
-  s2.away = false;                                       // reopening the book calls the cat back, so Story 2 can replay
   riddleText.textContent = RIDDLE;
   riddleEl.hidden = false;
   s2.panelAlpha = 1;
@@ -88,7 +87,7 @@ function closeRiddle() {
 }
 
 function onBook() {
-  if (!canAct()) return;
+  if (!canAct() || game.found[1]) return;                   // a finished story does nothing
   if (game.mode === 'idle') openRiddle();
   else if (game.mode === 'riddle') closeRiddle();
 }
@@ -141,6 +140,7 @@ function story2Update(dt) {
   s2.awayK = clamp01(s2.awayK + (s2.away ? dt : -dt) / CAT_JUMP);
   if (s2.awayK >= 1 && !s2.landed) { s2.landed = true; burst(RUNE.x, RUNE.y, '#d9a8ff', 14, 36, 0.9, 0); }
   if (s2.awayK < 1) s2.landed = false;
+  bookSpot.disabled = game.found[1];
   catSpot.disabled = s2.away || !canTalk();                // the cat on the floor is not a target
   runeSpot.disabled = s2.awayK < 1 || !canTalk() || s3.door;   // once opened, the door is the target
 
@@ -230,6 +230,7 @@ function drawRune(tv) {
 
 // The green book on the shelf is the spellbook: it glows faintly and has a gold eye on its spine
 function drawSpellbook(tv) {
+  if (game.found[1]) return;                              // once found, the book is an ordinary book again
   const open = game.mode === 'riddle';
   const pulse = state.reduceMotion ? 0.5 : 0.5 + 0.5 * Math.sin(tv * 2.2);
   const cx = BOOK.x + BOOK.w / 2, cy = BOOK.y - BOOK.h / 2;

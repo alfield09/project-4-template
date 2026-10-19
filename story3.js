@@ -117,7 +117,7 @@ function openRuneDoor() {
 
 // Each blinking star lights up with a rising note; the third one sends the cloud away from the moon
 function onStar(i) {
-  if (!canAct() || game.mode !== 'idle' || s3.doorK < 1 || !s3.starsShown || s3.lit[i]) return;
+  if (!canAct() || game.mode !== 'idle' || s3.doorK < 1 || !s3.starsShown || s3.lit[i] || game.found[2]) return;
   s3.lit[i] = true; s3.order.push(i);
   const n = s3.order.length - 1;
   sfxChime(n);                                           // C5, E5, G5 (story.js)
@@ -131,7 +131,7 @@ function onStar(i) {
 }
 
 function onMoon() {
-  if (!canAct() || game.mode !== 'idle' || !moonRevealed()) return;
+  if (!canAct() || game.mode !== 'idle' || !moonRevealed() || game.found[2]) return;
   game.mode = 'story3';
   game.story = null;
   s3.story = { t: 0, trailT: 0 };
@@ -143,7 +143,7 @@ function endStory3() {
   game.mode = 'idle';
   game.hintClock = 0;
   s3.story = null; s3.witch = null; s3.moonGlow = 0; s3.idle = 0; s3.hint = STAR_HINTS.length; s3.moonHint = true;   // hints are done once found
-  s3.lit = [false, false, false]; s3.order = [];          // the stars go dark and the cloud returns, ready to replay
+  s3.lit = [false, false, false]; s3.order = []; s3.cloudX = CLOUD.hidden;   // the stars and the cloud are gone for good
   markFound(2);
 }
 
@@ -161,12 +161,12 @@ function story3Update(dt) {
   }
 
   // The cloud sits over the moon once the stars are revealed and unlit; it drifts away when they are lit
-  const target = !s3.door || !s3.starsShown ? CLOUD.hidden : starsDone() ? CLOUD.away : CLOUD.home;
+  const target = !s3.door || !s3.starsShown || game.found[2] ? CLOUD.hidden : starsDone() ? CLOUD.away : CLOUD.home;
   const move = CLOUD.speed * dt;
   s3.cloudX += Math.max(-move, Math.min(move, target - s3.cloudX));
 
   const idle = game.mode === 'idle' && s3.door && !game.found[2];
-  STARS3.forEach((s, i) => { starSpots[i].disabled = !(s3.doorK >= 1 && s3.starsShown && game.mode === 'idle' && !s3.lit[i]); });
+  STARS3.forEach((s, i) => { starSpots[i].disabled = game.found[2] || !(s3.doorK >= 1 && s3.starsShown && game.mode === 'idle' && !s3.lit[i]); });
   moonSpot.disabled = !(game.mode === 'idle' && moonRevealed());
 
   if (idle) {
@@ -269,7 +269,7 @@ function story3DrawSky(tv) {
   const { x, y, w, h } = WIN;
   ctx.save();
   ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
-  if (s3.doorK > 0 && s3.starsShown) drawStars3(tv);
+  if (s3.doorK > 0 && s3.starsShown && !game.found[2]) drawStars3(tv);
   if (s3.cloudX > CLOUD.hidden) drawCloud();
   if (starsDone() && game.mode === 'idle') {                          // the moon, freshly revealed, glows
     const pulse = state.reduceMotion ? 0.5 : 0.5 + 0.5 * Math.sin(tv * 3);
@@ -344,7 +344,7 @@ function story3DrawFx(tv) {
 
   if (game.mode === 'idle') {
     if (!s3.starsShown && s3.idle >= TRAIL_AT) drawTrail(tv, CAULDRON_POINT.x, CAULDRON_POINT.y);   // before the reveal: points at the cauldron
-    const next = s3.starsShown ? s3.lit.findIndex(l => !l) : -1;
+    const next = s3.starsShown && !game.found[2] ? s3.lit.findIndex(l => !l) : -1;
     if (next >= 0 && s3.idle >= TRAIL_AT) drawTrail(tv, STARS3[next].x - 6, STARS3[next].y + 8);   // points at an unlit star
     if (moonRevealed()) {
       drawTrail(tv, MOON.x - 8, MOON.y + 14);                                                       // then at the moon
